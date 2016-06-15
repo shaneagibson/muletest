@@ -10,22 +10,6 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
     <http:listener-config name="InboundHTTPRequest" host="localhost" port="8081" doc:name="Inbound HTTP Request"/>
 
     <http:request-config name="ErrorServer" host="localhost" port="9000" doc:name="HTTP Request Configuration"/>
-
-    <sub-flow name="SubFlow_English">
-        <set-payload value="Hello!" doc:name="Reply in English"/>
-    </sub-flow>
-
-    <sub-flow name="SubFlow_UnknownLanguage">
-        <logger message="Unknown Language specified. Using English as default." level="INFO" doc:name="Logger"/>
-        <http:request config-ref="ErrorServer" path="/error" method="POST" doc:name="HTTP">
-            <http:request-builder>
-                <http:query-param paramName="error" value="Unknown language: #[message.inboundProperties.'http.query.params'.language]"/>
-            </http:request-builder>
-        </http:request>
-        <set-variable variableName="language" value="English" doc:name="Set Language to English"/>
-        <flow-ref name="SubFlow_English" doc:name="SubFlow_English"/>
-    </sub-flow>
-
     <flow name="main">
         <http:listener config-ref="InboundHTTPRequest" path="*" doc:name="Inbound HTTP Request"/>
         <expression-filter expression="#[message.inboundProperties.'http.request.uri' != '/favicon.ico']" doc:name="Expression"/>
@@ -46,5 +30,20 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
         </choice>
         <logger message="The reply &quot;#[payload]&quot; means &quot;hello&quot; in #[flowVars.language]." level="INFO" doc:name="Logger"/>
     </flow>
+
+    <sub-flow name="SubFlow_English">
+        <set-payload value="Hello!" doc:name="Reply in English"/>
+    </sub-flow>
+
+    <sub-flow name="SubFlow_UnknownLanguage">
+        <logger message="Unknown Language specified. Using English as default." level="INFO" doc:name="Logger"/>
+        <http:request config-ref="ErrorServer" path="/error" method="POST" doc:name="HTTP">
+            <http:request-builder>
+                <http:query-param paramName="error" value="Unknown language: #[message.inboundProperties.'http.query.params'.language]"/>
+            </http:request-builder>
+        </http:request>
+        <set-variable variableName="language" value="English" doc:name="Set Language to English"/>
+        <flow-ref name="SubFlow_English" doc:name="SubFlow_English"/>
+    </sub-flow>
 
 </mule>
